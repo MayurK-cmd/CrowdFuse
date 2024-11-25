@@ -1,7 +1,7 @@
 // Event Create, Update and Rsvp routes
 const express = require("express");
 const { createEvent, updateEvent, rsvpEvent } = require("../controllers/eventController");
-const { authenticateJWT } = require("../middleware/authenticateJWT");
+const { authenticateJWT } = require("../middlewares/authenticateJWT");
 const router = express.Router();
 
 router.post("/", authenticateJWT, createEvent);
