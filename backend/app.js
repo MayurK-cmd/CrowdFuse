@@ -10,12 +10,8 @@ const app = express();
 app.use(express.json());
 
 // Connect to MongoDB
-mongoose.connect("", {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => console.log("Connected to MongoDB"))
-.catch(err => console.error("MongoDB connection error:", err));
+mongoose.connect("");
+
  
 // Routes
 app.use("/event", eventRoutes);

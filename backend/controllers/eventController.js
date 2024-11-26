@@ -1,6 +1,7 @@
-// Create Event, Update Event, Rsvp to event
+const { authenticateJWT } = require("../middlewares/authenticateJWT");
 const { Event } = require("../models/eventModel");
 const { createEvent } = require("../utils/zodSchemas");
+
 
 // Create an event
 exports.createEvent = async (req, res) => {
@@ -8,7 +9,7 @@ exports.createEvent = async (req, res) => {
     const parsedPayload = createEvent.safeParse(createPayload);
 
     if (!parsedPayload.success) {
-        return res.status(400).json({ msg: "You sent the wrong inputs", errors: parsedPayload.error.errors });
+        return res.status(400).json({ msg: "Invalid inputs", errors: parsedPayload.error.errors });
     }
 
     try {
@@ -22,7 +23,7 @@ exports.createEvent = async (req, res) => {
         });
 
         await event.save();
-        res.json({ msg: "Event scheduled successfully" });
+        res.status(201).json({ msg: "Event scheduled successfully", event });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -31,19 +32,56 @@ exports.createEvent = async (req, res) => {
 // Update event by title
 exports.updateEvent = async (req, res) => {
     const { title } = req.params;
-    const { newTitle, description, date, time, labels } = req.body;
+    const { title: newTitle, description, date, time, labels } = req.body;
 
-    const updateFields = { newTitle, description, date, time, labels };
+    const updateFields = { title: newTitle, description, date, time, labels };
 
     try {
-        const updatedEvent = await Event.findOneAndUpdate({ title }, updateFields, { new: true, runValidators: true });
+        const updatedEvent = await Event.findOneAndUpdate(
+            { title },
+            updateFields,
+            { new: true, runValidators: true }
+        );
         if (!updatedEvent) return res.status(404).json({ message: "Event not found" });
 
-        res.json(updatedEvent);
+        res.json({ message: "Event updated successfully", updatedEvent });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
+
+//List of authorised emails which can delete the event 
+const authorizedEmails =[
+    "mayurgk2006@gmail.com"
+    //others as per requirement
+]
+
+// DELETE route for deleting an event by title
+exports.deleteEvent = async (req, res) => {
+    const { title } = req.params;
+  
+    try {
+      // Find event by title
+      const event = await Event.findOne({ title });
+  
+      if (!event) {
+        return res.status(404).json({ message: "Event not found" });
+      }
+  
+      // Check if the logged-in user's email is in authorizedEmails
+      if (!authorizedEmails.includes(req.user.email)) {
+        return res.status(403).json({ message: "You are not authorized to delete this event" });
+      }
+  
+      // Delete the event
+      await event.deleteOne();
+
+      res.status(200).json({ message: "Event deleted successfully." });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Server error" });
+    }
+  };
 
 // RSVP to an event
 exports.rsvpEvent = async (req, res) => {
@@ -51,7 +89,7 @@ exports.rsvpEvent = async (req, res) => {
     const { eventRole } = req.body;
 
     if (!["volunteer", "organizer", "attendee"].includes(eventRole)) {
-        return res.status(400).json({ message: "Invalid eventRole" });
+        return res.status(400).json({ message: "Invalid eventRole. Choose from 'volunteer', 'organizer', or 'attendee'." });
     }
 
     try {
@@ -64,7 +102,7 @@ exports.rsvpEvent = async (req, res) => {
 
         event.rsvp.push({ userId: user._id, eventRole });
         await event.save();
-        res.json({ message: "RSVP successful" });
+        res.json({ message: "RSVP successful", event });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
