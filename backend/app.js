@@ -1,16 +1,19 @@
 // Main file
 const express = require("express");
 const mongoose = require("mongoose");
+const dotenv = require("dotenv");
 const eventRoutes = require("./routes/eventRoutes");
 const authRoutes = require("./routes/authRoutes");
 
 const app = express();
 
+dotenv.config();
 // Middleware to parse JSON bodies
 app.use(express.json());
 
+
 // Connect to MongoDB
-mongoose.connect("");
+mongoose.connect(process.env.MONGO_URI);
 
  
 // Routes
