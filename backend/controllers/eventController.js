@@ -167,3 +167,40 @@ exports.getUserEvents = async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 };
+
+
+// Remove attendee
+exports.removeAttendee = async (req, res) => {
+    const { eventId, usernameToRemove } = req.params;
+
+    try {
+        const event = await Event.findById(eventId); // Corrected: findbyId -> findById
+        if (!event) return res.status(404).json({ message: "Event not found" });
+
+        const user = req.user;
+        const isVolunteer = event.rsvp.some(
+            (rsvp) => rsvp.userId.toString() === user._id.toString() && rsvp.eventRole === "volunteer"
+        );
+
+        if (!isVolunteer) {
+            return res.status(403).json({ message: "Only volunteers can remove the attendees" });
+        }
+
+        const userToRemove = await User.findOne({ username: usernameToRemove }); // Corrected: await.User -> await User
+        if (!userToRemove) return res.status(404).json({ message: "User not found" });
+
+        const rsvpIndex = event.rsvp.findIndex(
+            (rsvp) => rsvp.userId.toString() === userToRemove._id.toString() // Corrected: toSting -> toString
+        );
+        if (rsvpIndex === -1) {
+            return res.status(404).json({ message: "User not found in RSVP list" });
+        }
+
+        event.rsvp.splice(rsvpIndex, 1);
+        await event.save();
+
+        res.json({ message: `User with username ${usernameToRemove} has been removed from the event` }); // Corrected: fixed interpolation
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
