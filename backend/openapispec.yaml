@@ -116,7 +116,7 @@ paths:
                   format: date
                   example: "2025-04-01"
                 time:
-                  type:string
+                  type: string
                   format: time
                   example: "14:00"
       responses:
