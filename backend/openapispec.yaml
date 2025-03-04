@@ -115,6 +115,10 @@ paths:
                   type: string
                   format: date
                   example: "2025-04-01"
+                time:
+                  type:string
+                  format: time
+                  example: "14:00"
       responses:
         "201":
           description: Event created successfully
@@ -151,6 +155,10 @@ paths:
                   type: string
                   format: date
                   example: "2025-04-02"
+                time:
+                  type: string
+                  format: time
+                  example: "15:00"
       responses:
         "200":
           description: Event updated successfully
