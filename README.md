@@ -33,10 +33,10 @@ CrowdFuse is officially launched and ready to revolutionize the event experience
    `node app.js`
 
 ## Through Docker
-1. Build a docker image
+1. Build a docker image:
    `docker build -t crowd-fuse . `
 
-2. Run the container
+2. Run the container:
    `docker run -d -p 3000:3000 my-container crowd-fuse`
 
 ## Contributing
