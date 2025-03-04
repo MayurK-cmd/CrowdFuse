@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
-  title: Authentication API
-  description: API for user signup, login, and access management
+  title: CrowdFuse API
+  description: API for CrowdFuse, a community event management platform.
   version: 1.0.0
 
 servers:
