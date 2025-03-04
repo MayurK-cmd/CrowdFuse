@@ -34,10 +34,10 @@ CrowdFuse is officially launched and ready to revolutionize the event experience
 
 ## Through Docker
 1. Build a docker image
-   'docker build -t crowd-fuse . '
+   `docker build -t crowd-fuse . `
 
 2. Run the container
-   'docker run -d -p 3000:3000 my-container crowd-fuse'
+   `docker run -d -p 3000:3000 my-container crowd-fuse`
 
 ## Contributing
 Feel free to fork this project and submit pull requests. Contributions are always welcome to improve CrowdFuse!
