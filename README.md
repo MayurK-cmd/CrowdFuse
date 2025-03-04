@@ -18,19 +18,26 @@ CrowdFuse is officially launched and ready to revolutionize the event experience
 - **Authentication:** JWT
 - **Validation:** Zod
 - **Frontend:** React (for future development)
-
+  
 ## Installation
 1. Clone the repository:  
    `git clone https://github.com/MayurK-cmd/crowdfuse.git`
 
 2. Navigate to the project folder:  
-   `cd crowdfuse`
+   `cd crowdfuse/backend`
 
 3. Install dependencies:  
    `npm install`
 
 4. Start the development server:  
    `node app.js`
+
+## Through Docker
+1. Build a docker image:
+   `docker build -t crowd-fuse . `
+
+2. Run the container:
+   `docker run -d -p 3000:3000 my-container crowd-fuse`
 
 ## Contributing
 Feel free to fork this project and submit pull requests. Contributions are always welcome to improve CrowdFuse!
