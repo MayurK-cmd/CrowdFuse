@@ -4,6 +4,9 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const eventRoutes = require("./routes/eventRoutes");
 const authRoutes = require("./routes/authRoutes");
+const swaggerUi = require("swagger-ui-express");
+const YAML = require("yamljs");
+const swaggerDocument = YAML.load("./openapispec.yaml");
 
 const app = express();
 
@@ -19,6 +22,7 @@ mongoose.connect(process.env.MONGO_URI);
 // Routes
 app.use("/event", eventRoutes);
 app.use("/", authRoutes);
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Server setup
 app.listen(3000, () => {
