@@ -119,6 +119,11 @@ paths:
                   type: string
                   format: time
                   example: "14:00"
+                labels:
+                  type: array
+                  items:
+                    type: string
+                  example: ["community", "networking"]
       responses:
         "201":
           description: Event created successfully
@@ -159,6 +164,11 @@ paths:
                   type: string
                   format: time
                   example: "15:00"
+                labels:
+                  type: array
+                  items:
+                   type: string
+                  example: ["community", "networking"]
       responses:
         "200":
           description: Event updated successfully
