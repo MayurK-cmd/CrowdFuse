@@ -7,6 +7,7 @@ const authRoutes = require("./routes/authRoutes");
 const swaggerUi = require("swagger-ui-express");
 const YAML = require("yamljs");
 const swaggerDocument = YAML.load("./openapispec.yaml");
+const cors = require("cors");
 
 const app = express();
 
@@ -20,6 +21,7 @@ mongoose.connect(process.env.MONGO_URI);
 
  
 // Routes
+app.use(cors());
 app.use("/event", eventRoutes);
 app.use("/", authRoutes);
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));

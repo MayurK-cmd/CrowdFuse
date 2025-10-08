@@ -8,7 +8,7 @@ const JWT_SECRET = "your_secret_key";
 
 // Signup route
 exports.signup = async (req, res) => {
-    const { email, password, username, role = "Resident" } = req.body;
+    const { email, password, firstName, lastName, city, contactNumber, role = "Resident" } = req.body;
 
     try {
         const existingUser = await User.findOne({ email });
@@ -17,7 +17,7 @@ exports.signup = async (req, res) => {
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = new User({ email, password: hashedPassword, username, role });
+        const newUser = new User({ email, password: hashedPassword, firstName, lastName, city, contactNumber, role });
 
         await newUser.save();
         res.status(201).json({ msg: "User registered successfully" });
