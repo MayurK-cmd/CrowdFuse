@@ -13,7 +13,7 @@ exports.createEvent = async (req, res) => {
     }
 
     try {
-        const user = req.user;  // Get the current logged-in user
+        const user = req.user;
 
         const event = new Event({
             title: createPayload.title,
@@ -21,7 +21,15 @@ exports.createEvent = async (req, res) => {
             date: createPayload.date,
             time: createPayload.time,
             labels: createPayload.labels || [],
-            rsvp: [{ userId: user._id, eventRole: "organizer" }],  // Automatically set the user as the organizer
+            location: {
+                type: 'Point',
+                coordinates: [createPayload.longitude, createPayload.latitude], // [lng, lat]
+                address: createPayload.address,
+                city: createPayload.city,
+                state: createPayload.state,
+                country: createPayload.country
+            },
+            rsvp: [{ userId: user._id, eventRole: "organizer" }],
         });
 
         await event.save();
@@ -169,7 +177,7 @@ exports.getUserEvents = async (req, res) => {
 };
 
 
-// Remove attendee
+// Remove attendee (only by volunteer)
 exports.removeAttendee = async (req, res) => {
     const { eventId, usernameToRemove } = req.params;
 
@@ -202,5 +210,180 @@ exports.removeAttendee = async (req, res) => {
         res.json({ message: `User with username ${usernameToRemove} has been removed from the event` }); // Corrected: fixed interpolation
     } catch (error) {
         res.status(500).json({ message: error.message });
+    }
+};
+
+// GET events by label(s)
+exports.getEventsByLabel = async (req, res) => {
+    try {
+        const { labels } = req.query; // Can be a comma-separated string: ?labels=tech,workshop
+
+        if (!labels) {
+            return res.status(400).json({ message: "Please provide labels parameter" });
+        }
+
+        const labelArray = labels.split(',').map(label => label.trim());
+
+        // Find events that contain ANY of the provided labels
+        const events = await Event.find({
+            labels: { $in: labelArray }
+        }).populate('rsvp.userId', 'firstName lastName email');
+
+        if (events.length === 0) {
+            return res.status(404).json({ message: "No events found with the specified labels" });
+        }
+
+        res.json({ message: "Events found", count: events.length, events });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+// GET events by organizer username
+exports.getEventsByOrganizer = async (req, res) => {
+    try {
+        const { username } = req.params;
+
+        // Find the user by username
+        const organizer = await User.findOne({ username });
+        if (!organizer) {
+            return res.status(404).json({ message: "Organizer not found" });
+        }
+
+        // Find events where this user is the organizer
+        const events = await Event.find({
+            "rsvp": {
+                $elemMatch: {
+                    userId: organizer._id,
+                    eventRole: "organizer"
+                }
+            }
+        }).populate('rsvp.userId', 'firstName lastName email');
+
+        if (events.length === 0) {
+            return res.status(404).json({ message: "No events found for this organizer" });
+        }
+
+        res.json({ 
+            message: "Events found", 
+            organizer: { 
+                username, 
+                name: `${organizer.firstName} ${organizer.lastName}` 
+            },
+            count: events.length, 
+            events 
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+// GET events near me (within radius)
+exports.getEventsNearMe = async (req, res) => {
+    try {
+        const { longitude, latitude, radius = 10000 } = req.query; // radius in meters (default 10km)
+
+        if (!longitude || !latitude) {
+            return res.status(400).json({ 
+                message: "Please provide longitude and latitude parameters" 
+            });
+        }
+
+        const lng = parseFloat(longitude);
+        const lat = parseFloat(latitude);
+
+        if (isNaN(lng) || isNaN(lat)) {
+            return res.status(400).json({ message: "Invalid coordinates" });
+        }
+
+        // MongoDB geospatial query
+        const events = await Event.find({
+            location: {
+                $near: {
+                    $geometry: {
+                        type: "Point",
+                        coordinates: [lng, lat]
+                    },
+                    $maxDistance: parseInt(radius) // in meters
+                }
+            }
+        }).populate('rsvp.userId', 'firstName lastName email');
+
+        if (events.length === 0) {
+            return res.status(404).json({ 
+                message: `No events found within ${radius/1000}km of your location` 
+            });
+        }
+
+        // Calculate distance for each event (optional)
+        const eventsWithDistance = events.map(event => {
+            const eventLng = event.location.coordinates[0];
+            const eventLat = event.location.coordinates[1];
+            
+            // Haversine formula for distance calculation
+            const R = 6371; // Earth's radius in km
+            const dLat = (eventLat - lat) * Math.PI / 180;
+            const dLng = (eventLng - lng) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                     Math.cos(lat * Math.PI / 180) * Math.cos(eventLat * Math.PI / 180) *
+                     Math.sin(dLng/2) * Math.sin(dLng/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            const distance = R * c;
+
+            return {
+                ...event.toObject(),
+                distanceInKm: parseFloat(distance.toFixed(2))
+            };
+        });
+
+        res.json({ 
+            message: "Events found nearby", 
+            searchRadius: `${radius/1000}km`,
+            count: events.length,
+            events: eventsWithDistance 
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+// GET all events with optional filters
+exports.getAllEvents = async (req, res) => {
+    try {
+        const { city, label, upcoming } = req.query;
+        
+        let query = {};
+
+        // Filter by city
+        if (city) {
+            query['location.city'] = new RegExp(city, 'i'); // case-insensitive
+        }
+
+        // Filter by label
+        if (label) {
+            query.labels = { $in: [label] };
+        }
+
+        // Filter upcoming events only
+        if (upcoming === 'true') {
+            const today = new Date().toISOString().split('T')[0];
+            query.date = { $gte: today };
+        }
+
+        const events = await Event.find(query)
+            .populate('rsvp.userId', 'firstName lastName email')
+            .sort({ date: 1, time: 1 }); // Sort by date and time
+
+        res.json({ 
+            message: "Events retrieved", 
+            count: events.length, 
+            events 
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Server error" });
     }
 };

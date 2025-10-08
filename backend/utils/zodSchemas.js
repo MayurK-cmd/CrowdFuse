@@ -2,11 +2,17 @@
 const zod = require("zod");
 
 const createEvent = zod.object({
-    title: zod.string().nonempty("Title is required"),
-    description: zod.string().nonempty("Description is required"),
-    date: zod.string().nonempty("Set a Date"),
-    time: zod.string().nonempty("Enter the time"),
+    title: zod.string().min(1, "Title is required"),
+    description: zod.string().min(1, "Description is required"),
+    date: zod.string().min(1, "Date is required"),
+    time: zod.string().min(1, "Time is required"),
     labels: zod.array(zod.string()).optional(),
+    longitude: zod.number().min(-180).max(180, "Invalid longitude"),
+    latitude: zod.number().min(-90).max(90, "Invalid latitude"),
+    address: zod.string().min(1, "Address is required"),
+    city: zod.string().optional(),
+    state: zod.string().optional(),
+    country: zod.string().optional()
 });
 
 const updateEvent = zod.object({
