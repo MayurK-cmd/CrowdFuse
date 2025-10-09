@@ -1,5 +1,6 @@
 import React from 'react';
 import { Calendar, Users, CheckCircle, Sparkles, ArrowRight, Menu } from 'lucide-react';
+import BlurText from '../components/BlurText';
 
 export default function LandingPage() {
   return (
@@ -30,11 +31,20 @@ export default function LandingPage() {
       {/* Hero Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center">
-          <h1 className="text-5xl md:text-6xl font-bold text-black mb-6">
+          {/* <h1 className="text-5xl md:text-6xl font-bold text-black mb-6">
             Manage Events That
             <span className="block mt-2">Bring People Together</span>
-          </h1>
-          <p className="text-xl text-gray-600 mb-10 max-w-3xl mx-auto">
+          </h1> */}
+          
+          <BlurText
+            text="Manage Events That Bring People Together"
+            delay={150}
+            animateBy="words"
+            direction="top"
+  className="text-5xl md:text-6xl font-bold text-black mb-6"
+/>
+
+          <p className="mt-5 text-xl text-gray-600 mb-10 max-w-3xl mx-auto">
             Create, organize, and manage events seamlessly. Connect with attendees and volunteers all in one powerful platform.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -99,7 +109,7 @@ export default function LandingPage() {
             Join thousands of event organizers who trust CrowdFuse to bring their communities together.
           </p>
           <a href="/signup" className="inline-flex items-center px-8 py-4 bg-white text-black rounded-lg text-lg font-semibold hover:bg-gray-100 transition">
-            Start Your Free Trial
+            Start Your Journey Now!
             <ArrowRight className="ml-2 h-5 w-5" />
           </a>
         </div>

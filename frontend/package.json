@@ -13,6 +13,7 @@
     "@tailwindcss/vite": "^4.1.14",
     "cors": "^2.8.5",
     "lucide-react": "^0.545.0",
+    "motion": "^12.23.22",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-router-dom": "^7.9.3",

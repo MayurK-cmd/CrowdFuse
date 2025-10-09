@@ -6,6 +6,7 @@ import SignupPage from "./pages/Signup";
 import HomePage from "./pages/Home";
 import MyEventsPage from "./pages/MyEvents";
 import CreateEventPage from "./pages/CreateEvent";
+import SearchPage from "./pages/SearchPage";
 
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
         <Route path="/home" element={<HomePage />} />
         <Route path="/my-events" element={<MyEventsPage />} />
         <Route path="/create-event" element={<CreateEventPage />} />
+        <Route path="/search" element={<SearchPage />} />
       </Routes>
     </Router>
   );
