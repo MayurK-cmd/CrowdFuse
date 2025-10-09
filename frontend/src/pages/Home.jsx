@@ -183,36 +183,10 @@ export default function HomePage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex flex-col md:flex-row gap-4 mb-8">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search events..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-black focus:outline-none transition"
-            />
+           
           </div>
-          <div className="relative">
-            <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Filter by city..."
-              value={filterCity}
-              onChange={(e) => setFilterCity(e.target.value)}
-              className="w-full md:w-64 pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-black focus:outline-none transition"
-            />
-          </div>
-          <button
-            onClick={() => setShowUpcoming(!showUpcoming)}
-            className={`px-6 py-3 rounded-lg font-semibold transition cursor-pointer flex items-center justify-center ${
-              showUpcoming
-                ? 'bg-black text-white'
-                : 'border-2 border-black text-black hover:bg-gray-50'
-            }`}
-          >
-            <Filter className="h-5 w-5 mr-2" />
-            Upcoming Only
-          </button>
+          
+          
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -312,7 +286,7 @@ export default function HomePage() {
 
       {/* RSVP Modal */}
       {showModal && selectedEvent && (
-        <div className="fixed inset-0 bg-gray-900 bg-opacity-40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-gray-9 bg-opacity-40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
             <div className="bg-white border-b border-gray-200 p-6 flex justify-between items-start">
               <h2 className="text-2xl font-bold text-black pr-8">{selectedEvent.title}</h2>

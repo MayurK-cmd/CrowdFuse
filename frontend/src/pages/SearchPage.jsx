@@ -93,7 +93,7 @@ export default function SearchPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center h-16">
             <button
-              onClick={() => navigate('/')}
+              onClick={() => navigate('/home')}
               className="flex items-center text-black hover:text-gray-600 transition cursor-pointer"
             >
               <ArrowLeft className="h-5 w-5 mr-2" />

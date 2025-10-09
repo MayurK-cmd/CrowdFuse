@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, Calendar, MapPin, Users, ArrowLeft, UserCheck, UserCog, Star } from 'lucide-react';
+import { Sparkles, Calendar, MapPin, Users, ArrowLeft, UserCheck, UserCog, Star, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -10,6 +10,8 @@ export default function MyEventsPage() {
   const [events, setEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState('all'); // all, organizing, volunteering, attending
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     fetchMyEvents();
@@ -18,13 +20,12 @@ export default function MyEventsPage() {
   const fetchMyEvents = async () => {
     try {
       const token = localStorage.getItem('token');
-      const user = JSON.parse(localStorage.getItem('user'));
       
       const response = await api.get('/event/user-events', {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      setEvents(response.data.events);
+      setEvents(response.data.events || []);
     } catch (error) {
       toast.error('Failed to fetch your events');
       console.error('Error fetching events:', error);
@@ -35,13 +36,25 @@ export default function MyEventsPage() {
 
   const getUserRole = (event) => {
     const user = JSON.parse(localStorage.getItem('user'));
-    const userRsvp = event.rsvp.find(r => r.userId._id === user._id || r.userId === user._id);
+    if (!user || !event.rsvp) return 'unknown';
+    
+    const userRsvp = event.rsvp.find(r => {
+      const rsvpUserId = typeof r.userId === 'object' ? r.userId._id : r.userId;
+      return rsvpUserId === user._id;
+    });
+    
     return userRsvp?.eventRole || 'unknown';
   };
 
   const getFilteredEvents = () => {
     if (filter === 'all') return events;
-    return events.filter(event => getUserRole(event) === filter.replace('ing', '').replace('attend', 'attendee'));
+    return events.filter(event => {
+      const role = getUserRole(event);
+      if (filter === 'organizing') return role === 'organizer';
+      if (filter === 'volunteering') return role === 'volunteer';
+      if (filter === 'attending') return role === 'attendee';
+      return false;
+    });
   };
 
   const getRoleIcon = (role) => {
@@ -72,6 +85,31 @@ export default function MyEventsPage() {
     );
   };
 
+  const openModal = (event) => {
+    setSelectedEvent(event);
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedEvent(null);
+  };
+
+  const handleCancelRSVP = async (eventId) => {
+    try {
+      const token = localStorage.getItem('token');
+      await api.delete(`/event/${eventId}/rsvp`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success('RSVP cancelled successfully!');
+      setShowModal(false);
+      setSelectedEvent(null);
+      fetchMyEvents();
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to cancel RSVP');
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
@@ -84,6 +122,9 @@ export default function MyEventsPage() {
   }
 
   const filteredEvents = getFilteredEvents();
+  const organizingCount = events.filter(e => getUserRole(e) === 'organizer').length;
+  const volunteeringCount = events.filter(e => getUserRole(e) === 'volunteer').length;
+  const attendingCount = events.filter(e => getUserRole(e) === 'attendee').length;
 
   return (
     <div className="min-h-screen bg-white">
@@ -137,7 +178,7 @@ export default function MyEventsPage() {
                 : 'border-2 border-gray-200 text-black hover:border-black'
             }`}
           >
-            Organizing ({events.filter(e => getUserRole(e) === 'organizer').length})
+            Organizing ({organizingCount})
           </button>
           <button
             onClick={() => setFilter('volunteering')}
@@ -147,7 +188,7 @@ export default function MyEventsPage() {
                 : 'border-2 border-gray-200 text-black hover:border-black'
             }`}
           >
-            Volunteering ({events.filter(e => getUserRole(e) === 'volunteer').length})
+            Volunteering ({volunteeringCount})
           </button>
           <button
             onClick={() => setFilter('attending')}
@@ -157,7 +198,7 @@ export default function MyEventsPage() {
                 : 'border-2 border-gray-200 text-black hover:border-black'
             }`}
           >
-            Attending ({events.filter(e => getUserRole(e) === 'attendee').length})
+            Attending ({attendingCount})
           </button>
         </div>
 
@@ -166,6 +207,11 @@ export default function MyEventsPage() {
           {filteredEvents.length === 0 ? (
             <div className="col-span-full text-center py-12">
               <p className="text-gray-600 text-lg">No events found</p>
+              <p className="text-gray-500 text-sm mt-2">
+                {filter === 'all' 
+                  ? "You haven't joined any events yet"
+                  : `You're not ${filter.replace('ing', '').replace('attend', 'attending')} any events`}
+              </p>
             </div>
           ) : (
             filteredEvents.map((event) => {
@@ -174,10 +220,10 @@ export default function MyEventsPage() {
                 <div
                   key={event._id}
                   className="bg-white border-2 border-gray-200 rounded-xl p-6 hover:border-black transition cursor-pointer"
-                  onClick={() => navigate(`/event/${event._id}`)}
+                  onClick={() => openModal(event)}
                 >
                   <div className="flex justify-between items-start mb-4">
-                    <h3 className="text-xl font-bold text-black flex-1">{event.title}</h3>
+                    <h3 className="text-xl font-bold text-black flex-1 pr-2">{event.title}</h3>
                     {getRoleBadge(userRole)}
                   </div>
                   
@@ -190,11 +236,11 @@ export default function MyEventsPage() {
                     </div>
                     <div className="flex items-center text-gray-600 text-sm">
                       <MapPin className="h-4 w-4 mr-2" />
-                      {event.location.city}, {event.location.state}
+                      {event.location?.city}, {event.location?.state}
                     </div>
                     <div className="flex items-center text-gray-600 text-sm">
                       <Users className="h-4 w-4 mr-2" />
-                      {event.rsvp.length} people registered
+                      {event.rsvp?.length || 0} people registered
                     </div>
                   </div>
 
@@ -216,6 +262,115 @@ export default function MyEventsPage() {
           )}
         </div>
       </div>
+
+      {/* Event Details Modal */}
+      {showModal && selectedEvent && (
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
+            <div className="bg-white border-b border-gray-200 p-6 flex justify-between items-start">
+              <div className="flex-1 pr-8">
+                <h2 className="text-2xl font-bold text-black mb-2">{selectedEvent.title}</h2>
+                {getRoleBadge(getUserRole(selectedEvent))}
+              </div>
+              <button
+                onClick={closeModal}
+                className="p-2 hover:bg-gray-100 rounded-lg transition cursor-pointer"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+
+            <div className="p-6 overflow-y-auto max-h-[calc(90vh-88px)]">
+              <div className="space-y-4 mb-6">
+                <div>
+                  <h3 className="font-semibold text-black mb-2">Description</h3>
+                  <p className="text-gray-600">{selectedEvent.description}</p>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <h3 className="font-semibold text-black mb-2">Date & Time</h3>
+                    <div className="flex items-center text-gray-600">
+                      <Calendar className="h-5 w-5 mr-2" />
+                      {selectedEvent.date} at {selectedEvent.time}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="font-semibold text-black mb-2">Location</h3>
+                    <div className="flex items-start text-gray-600">
+                      <MapPin className="h-5 w-5 mr-2 mt-0.5" />
+                      <div>
+                        {selectedEvent.location?.address && (
+                          <p>{selectedEvent.location.address}</p>
+                        )}
+                        <p>{selectedEvent.location?.city}, {selectedEvent.location?.state}</p>
+                        <p>{selectedEvent.location?.country}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-black mb-2">Attendees</h3>
+                  <div className="flex items-center text-gray-600">
+                    <Users className="h-5 w-5 mr-2" />
+                    {selectedEvent.rsvp?.length || 0} people registered
+                  </div>
+                </div>
+
+                {selectedEvent.labels && selectedEvent.labels.length > 0 && (
+                  <div>
+                    <h3 className="font-semibold text-black mb-2">Tags</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedEvent.labels.map((label, idx) => (
+                        <span
+                          key={idx}
+                          className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full"
+                        >
+                          {label}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="border-t border-gray-200 pt-6">
+                {getUserRole(selectedEvent) === 'organizer' ? (
+                  <div className="text-center">
+                    <p className="text-gray-600 mb-4">
+                      You are the organizer of this event
+                    </p>
+                    <button
+                      onClick={() => navigate(`/event/${selectedEvent._id}/manage`)}
+                      className="w-full py-4 bg-black text-white rounded-xl text-lg font-semibold hover:bg-gray-800 transition cursor-pointer"
+                    >
+                      Manage Event
+                    </button>
+                  </div>
+                ) : (
+                  <div>
+                    <h3 className="font-semibold text-black mb-4 text-center">
+                      Your Registration
+                    </h3>
+                    <p className="text-gray-600 text-center mb-6">
+                      You are registered as a {getUserRole(selectedEvent)}
+                    </p>
+                    <button
+                      onClick={() => handleCancelRSVP(selectedEvent._id)}
+                      className="w-full py-4 border-2 border-red-500 text-red-500 rounded-xl text-lg font-semibold hover:bg-red-50 transition cursor-pointer"
+                    >
+                      Cancel RSVP
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

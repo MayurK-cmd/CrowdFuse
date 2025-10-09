@@ -1,6 +1,7 @@
 import React from 'react';
 import { Calendar, Users, CheckCircle, Sparkles, ArrowRight, Menu } from 'lucide-react';
 import BlurText from '../components/BlurText';
+import AnimatedContent from '../components/AnimatedContent';
 
 export default function LandingPage() {
   return (
@@ -67,36 +68,60 @@ export default function LandingPage() {
         </div>
         
         <div className="grid md:grid-cols-3 gap-8">
-          <div className="bg-white p-8 rounded-xl border border-gray-200">
-            <div className="h-12 w-12 bg-black rounded-lg flex items-center justify-center mb-6">
-              <Calendar className="h-6 w-6 text-white" />
-            </div>
-            <h3 className="text-2xl font-bold text-black mb-4">Create Events</h3>
-            <p className="text-gray-600">
-              Set up your event in minutes with our intuitive event creation flow. Add details, schedules, and customize to your needs.
-            </p>
-          </div>
+  <AnimatedContent
+    distance={100}
+    direction="vertical"
+    duration={0.8}
+    ease="power3.out"
+    delay={0}
+  >
+    <div className="bg-white p-8 rounded-xl border border-gray-200">
+      <div className="h-12 w-12 bg-black rounded-lg flex items-center justify-center mb-6">
+        <Calendar className="h-6 w-6 text-white" />
+      </div>
+      <h3 className="text-2xl font-bold text-black mb-4">Create Events</h3>
+      <p className="text-gray-600">
+        Set up your event in minutes with our intuitive event creation flow. Add details, schedules, and customize to your needs.
+      </p>
+    </div>
+  </AnimatedContent>
 
-          <div className="bg-white p-8 rounded-xl border border-gray-200">
-            <div className="h-12 w-12 bg-black rounded-lg flex items-center justify-center mb-6">
-              <CheckCircle className="h-6 w-6 text-white" />
-            </div>
-            <h3 className="text-2xl font-bold text-black mb-4">Easy RSVP</h3>
-            <p className="text-gray-600">
-              Let attendees RSVP with a single click. Track who's coming as an attendee or volunteer effortlessly.
-            </p>
-          </div>
+  <AnimatedContent
+    distance={100}
+    direction="vertical"
+    duration={0.8}
+    ease="power3.out"
+    delay={0.2}
+  >
+    <div className="bg-white p-8 rounded-xl border border-gray-200">
+      <div className="h-12 w-12 bg-black rounded-lg flex items-center justify-center mb-6">
+        <CheckCircle className="h-6 w-6 text-white" />
+      </div>
+      <h3 className="text-2xl font-bold text-black mb-4">Easy RSVP</h3>
+      <p className="text-gray-600">
+        Let attendees RSVP with a single click. Track who's coming as an attendee or volunteer effortlessly.
+      </p>
+    </div>
+  </AnimatedContent>
 
-          <div className="bg-white p-8 rounded-xl border border-gray-200">
-            <div className="h-12 w-12 bg-black rounded-lg flex items-center justify-center mb-6">
-              <Users className="h-6 w-6 text-white" />
-            </div>
-            <h3 className="text-2xl font-bold text-black mb-4">Manage Teams</h3>
-            <p className="text-gray-600">
-              Organize volunteers and attendees. Send updates, coordinate schedules, and keep everyone in sync.
-            </p>
-          </div>
-        </div>
+  <AnimatedContent
+    distance={100}
+    direction="vertical"
+    duration={0.8}
+    ease="power3.out"
+    delay={0.4}
+  >
+    <div className="bg-white p-8 rounded-xl border border-gray-200">
+      <div className="h-12 w-12 bg-black rounded-lg flex items-center justify-center mb-6">
+        <Users className="h-6 w-6 text-white" />
+      </div>
+      <h3 className="text-2xl font-bold text-black mb-4">Manage Teams</h3>
+      <p className="text-gray-600">
+        Organize volunteers and attendees. Send updates, coordinate schedules, and keep everyone in sync.
+      </p>
+    </div>
+  </AnimatedContent>
+</div>
       </section>
 
       {/* CTA Section */}
