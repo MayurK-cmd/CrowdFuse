@@ -4,8 +4,8 @@ const { signup, login, toggleLoginAccess } = require("../controllers/authControl
 const { authenticateJWT } = require("../middlewares/authenticateJWT");
 const router = express.Router();
 
-router.post("/signup", signup);
-router.post("/login", login);
+router.post("/signup", signup);//over
+router.post("/login", login);//over
 router.post("/toggle-login", authenticateJWT, toggleLoginAccess);
 
 module.exports = router;
