@@ -4,17 +4,21 @@ const { createEvent, updateEvent, rsvpEvent, deleteEvent, removeRSVP, getUserEve
 const { authenticateJWT } = require("../middlewares/authenticateJWT");
 const router = express.Router();
 
-router.post("/", authenticateJWT, createEvent);//over
-router.put("/title/:title", authenticateJWT, updateEvent);
-router.delete("/:title", authenticateJWT, deleteEvent)
-router.post("/:eventId/rsvp", authenticateJWT, rsvpEvent);//over
-router.delete("/:eventId/rsvp/:usernameToRemove", authenticateJWT, removeRSVP);
-router.get("/user-events", authenticateJWT, getUserEvents);//over
-router.delete("/:eventId/remove-attendee/:usernameToRemove", authenticateJWT, removeAttendee);
-router.get('/all', authenticateJWT, getAllEvents); // GET all events with optional filters//over
-router.get('/search/labels', authenticateJWT, getEventsByLabel); // Search by labels//over
-router.get('/search/organizer/:username', authenticateJWT, getEventsByOrganizer); // Search by organizer//over
+router.post("/", authenticateJWT, createEvent);//Creates an event
+router.post("/:eventId/rsvp", authenticateJWT, rsvpEvent);//RSVP to an event
+router.get("/user-events", authenticateJWT, getUserEvents);//Get events created or RSVP'd by the user
+router.get('/all', authenticateJWT, getAllEvents); // GET all events with optional filters
+router.get('/search/labels', authenticateJWT, getEventsByLabel); // Search by labels
+//router.get('/search/organizer/:firstname', authenticateJWT, getEventsByOrganizer); // Search by organizer
+
+
 router.get('/nearby', authenticateJWT, getEventsNearMe); // Events near user location
 
+
+
+router.put("/title/:title", authenticateJWT, updateEvent);//Update event details by title
+router.delete("/:title", authenticateJWT, deleteEvent)//Delete event by title only by authed emails
+router.delete("/:eventId/rsvp/:emailToRemove", authenticateJWT, removeRSVP);//organizer can remove an RSVP
+router.delete("/:eventId/remove-attendee/:emailToRemove", authenticateJWT, removeAttendee);//volunteer can remove an attendee
 
 module.exports = router;

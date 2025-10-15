@@ -120,7 +120,7 @@ exports.rsvpEvent = async (req, res) => {
 
 // Remove a user from the event RSVP list (only by organizer)
 exports.removeRSVP = async (req, res) => {
-    const { eventId, usernameToRemove } = req.params;  // Use usernameToRemove as the parameter
+    const { eventId, emailToRemove } = req.params;  // Use emailToRemove as the parameter
 
     try {
         // Find the event by its ID
@@ -136,7 +136,7 @@ exports.removeRSVP = async (req, res) => {
         }
 
         // Find the RSVP entry for the user to be removed by their userId
-        const userToRemove = await User.findOne({ username: usernameToRemove });  // Find user by username
+        const userToRemove = await User.findOne({ email: emailToRemove });  // Find user by email
         if (!userToRemove) return res.status(404).json({ message: "User not found" });
 
         // Find the RSVP entry for the user to be removed by their userId
@@ -149,7 +149,7 @@ exports.removeRSVP = async (req, res) => {
         event.rsvp.splice(rsvpIndex, 1);
         await event.save();
 
-        res.json({ message: `User with username ${usernameToRemove} has been removed from the event` });
+        res.json({ message: `User with email ${emailToRemove} has been removed from the event` });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -179,7 +179,7 @@ exports.getUserEvents = async (req, res) => {
 
 // Remove attendee (only by volunteer)
 exports.removeAttendee = async (req, res) => {
-    const { eventId, usernameToRemove } = req.params;
+    const { eventId, emailToRemove } = req.params;
 
     try {
         const event = await Event.findById(eventId); // Corrected: findbyId -> findById
@@ -194,7 +194,7 @@ exports.removeAttendee = async (req, res) => {
             return res.status(403).json({ message: "Only volunteers can remove the attendees" });
         }
 
-        const userToRemove = await User.findOne({ username: usernameToRemove }); // Corrected: await.User -> await User
+        const userToRemove = await User.findOne({ email: emailToRemove }); // Corrected: await.User -> await User
         if (!userToRemove) return res.status(404).json({ message: "User not found" });
 
         const rsvpIndex = event.rsvp.findIndex(
@@ -207,7 +207,7 @@ exports.removeAttendee = async (req, res) => {
         event.rsvp.splice(rsvpIndex, 1);
         await event.save();
 
-        res.json({ message: `User with username ${usernameToRemove} has been removed from the event` }); // Corrected: fixed interpolation
+        res.json({ message: `User with email ${emailToRemove} has been removed from the event` }); // Corrected: fixed interpolation
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -234,46 +234,6 @@ exports.getEventsByLabel = async (req, res) => {
         }
 
         res.json({ message: "Events found", count: events.length, events });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Server error" });
-    }
-};
-
-// GET events by organizer username
-exports.getEventsByOrganizer = async (req, res) => {
-    try {
-        const { username } = req.params;
-
-        // Find the user by username
-        const organizer = await User.findOne({ username });
-        if (!organizer) {
-            return res.status(404).json({ message: "Organizer not found" });
-        }
-
-        // Find events where this user is the organizer
-        const events = await Event.find({
-            "rsvp": {
-                $elemMatch: {
-                    userId: organizer._id,
-                    eventRole: "organizer"
-                }
-            }
-        }).populate('rsvp.userId', 'firstName lastName email');
-
-        if (events.length === 0) {
-            return res.status(404).json({ message: "No events found for this organizer" });
-        }
-
-        res.json({ 
-            message: "Events found", 
-            organizer: { 
-                username, 
-                name: `${organizer.firstName} ${organizer.lastName}` 
-            },
-            count: events.length, 
-            events 
-        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Server error" });
