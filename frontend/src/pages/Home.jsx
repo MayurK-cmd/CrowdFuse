@@ -20,17 +20,28 @@ export default function HomePage() {
   const eventsPerPage = 10;
 
   useEffect(() => {
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      setUser(JSON.parse(userData));
-    }
+    fetchUserDetails();
     fetchEvents();
   }, []);
 
   useEffect(() => {
     filterEvents();
-    setCurrentPage(1); // Reset to first page when filters change
+    setCurrentPage(1);
   }, [searchTerm, filterCity, showUpcoming, events]);
+
+  const fetchUserDetails = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await api.get('/my-profile', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setUser(response.data);
+      localStorage.setItem('user', JSON.stringify(response.data));
+    } catch (error) {
+      console.error('Error fetching user details:', error);
+      toast.error('Failed to load user data');
+    }
+  };
 
   const fetchEvents = async () => {
     try {
@@ -105,7 +116,6 @@ export default function HomePage() {
     setSelectedEvent(null);
   };
 
-  // Pagination logic
   const indexOfLastEvent = currentPage * eventsPerPage;
   const indexOfFirstEvent = indexOfLastEvent - eventsPerPage;
   const currentEvents = filteredEvents.slice(indexOfFirstEvent, indexOfLastEvent);
@@ -160,6 +170,12 @@ export default function HomePage() {
                 My Events
               </button>
               <button
+                onClick={() => navigate('/my-profile')}
+                className="px-4 py-2 border-2 border-black text-black rounded-lg hover:bg-gray-50 transition cursor-pointer"
+              >
+                Profile
+              </button>
+              <button
                 onClick={handleLogout}
                 className="px-4 py-2 text-black hover:text-gray-600 transition flex items-center cursor-pointer"
               >
@@ -185,8 +201,6 @@ export default function HomePage() {
           <div className="flex-1 relative">
            
           </div>
-          
-          
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -238,7 +252,6 @@ export default function HomePage() {
           )}
         </div>
 
-        {/* Pagination */}
         {filteredEvents.length > eventsPerPage && (
           <div className="flex justify-center items-center gap-2 mt-8">
             <button
@@ -284,9 +297,8 @@ export default function HomePage() {
         )}
       </div>
 
-      {/* RSVP Modal */}
       {showModal && selectedEvent && (
-        <div className="fixed inset-0 bg-gray-9 bg-opacity-40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
             <div className="bg-white border-b border-gray-200 p-6 flex justify-between items-start">
               <h2 className="text-2xl font-bold text-black pr-8">{selectedEvent.title}</h2>

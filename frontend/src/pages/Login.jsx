@@ -45,7 +45,7 @@ export default function LoginPage() {
         localStorage.setItem('user', JSON.stringify(response.data.user));
       }
       
-      console.log('Login successful:', response.data);
+      //console.log('Login successful:', response.data);
       
       // Show success toast
       toast.success('Login successful! Redirecting...', {

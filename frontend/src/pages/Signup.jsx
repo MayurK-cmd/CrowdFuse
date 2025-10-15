@@ -43,7 +43,7 @@ export default function SignupPage() {
         city: formData.city
       });
       
-      console.log('Signup successful:', response.data);
+      //console.log('Signup successful:', response.data);
       
       // Show success toast
       toast.success('Account created successfully! Redirecting to login...', {
