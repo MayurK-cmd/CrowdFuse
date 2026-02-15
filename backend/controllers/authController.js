@@ -56,7 +56,7 @@ exports.toggleLoginAccess = async (req, res) => {
     try {
         // Check if the admin user is authorized
         const adminUser = req.user;
-        if (adminUser.email !== "mayurgk2006@gmail.com") {
+        if (adminUser.email !== "mayurgk2006@gmail.com") {//come around this bug
             return res.status(403).json({ message: "Access denied" });
         }
 
