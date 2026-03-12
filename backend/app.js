@@ -22,6 +22,9 @@ mongoose.connect(process.env.MONGO_URI);
  
 // Routes
 app.use(cors());
+app.get("/health", (req, res) => {
+  res.send("System running");
+});
 app.use("/event", eventRoutes);
 app.use("/", authRoutes);
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
